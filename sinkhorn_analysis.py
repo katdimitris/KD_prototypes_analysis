@@ -300,6 +300,9 @@ def save_curve(xs, ys, ylabel, title, save_path):
     plt.savefig(save_path)
     plt.close()
 
+def cross_entropy_q_p(q, p):
+    return -(q * torch.log(p)).sum(dim=1).mean()
+
 
 def main(args):
     seed_everything(args.seed)
@@ -399,13 +402,12 @@ def main(args):
             d_student
         )
 
-        criterion = nn.CrossEntropyLoss()
-        kl_qt_pt = criterion(q_teacher, p_teacher)
-        kl_qs_ps = criterion(q_student, p_student)
-        kl_qt_ps = criterion(q_teacher, p_student)
-        kl_qs_pt = criterion(q_student, p_teacher)
-        kl_pt_ps = criterion(p_teacher, p_student)
-        kl_ps_pt = criterion(p_student, p_teacher)
+        kl_qt_pt = cross_entropy_q_p(q_teacher, p_teacher)
+        kl_qs_ps = cross_entropy_q_p(q_student, p_student)
+        kl_qt_ps = cross_entropy_q_p(q_teacher, p_student)
+        kl_qs_pt = cross_entropy_q_p(q_student, p_teacher)
+        kl_pt_ps = cross_entropy_q_p(p_teacher, p_student)
+        kl_ps_pt = cross_entropy_q_p(p_student, p_teacher)
 
         epochs.append(epoch)
         metrics_history["CE_q_teacher_p_teacher"].append(kl_qt_pt.cpu())
